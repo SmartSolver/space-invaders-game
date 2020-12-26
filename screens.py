@@ -83,11 +83,24 @@ class MainMenu(Scene):
         super().__init__(caption)
 
         self.nodes.append(Node(LOGO, size=(450, 175), pos=(App.screen.get_width()/2, 180)))
-        self.nodes.append(Text("Play", 60, (255,255,255), pos=(App.screen.get_width()/2, 350)))
-        self.nodes.append(Text("Settings", 60, (255,255,255), pos=(App.screen.get_width()/2, 415)))
-        self.nodes.append(Text("Exit", 60, (255,255,255), pos=(App.screen.get_width()/2, 480)))
+        self.nodes.append(Text("Play",     60, (230, 230,   0), pos=(App.screen.get_width()/2, 350)))
+        self.nodes.append(Text("Settings", 60, (255, 255, 255), pos=(App.screen.get_width()/2, 415)))
+        self.nodes.append(Text("Exit",     60, (255, 255, 255), pos=(App.screen.get_width()/2, 480)))
 
-        self.selected = 0
+        self._selected = 1
+
+    @property   
+    def selected(self):
+        
+        return self._selected
+
+    @selected.setter
+    def selected(self, val):
+        
+        self.nodes[self._selected].change_color((255, 255, 255))
+        self.nodes[val].change_color((230, 230, 0))
+
+        self._selected = val
 
     def do_event(self, e):
 
@@ -95,16 +108,16 @@ class MainMenu(Scene):
         
         if e.type == pygame.KEYDOWN:
             if e.key == pygame.K_UP or e.key == pygame.K_w:
-                if self.selected == 0: self.selected = len(self.options) - 1
+                if self.selected == 1: self.selected = 3
                 else: self.selected -= 1
 
             elif e.key == pygame.K_DOWN or e.key == pygame.K_s:
-                if len(self.options) - 1 == self.selected: self.selected = 0
+                if self.selected == 3: self.selected = 1
                 else: self.selected += 1
 
             # elif e.key == pygame.K_RETURN and self.selected == 0: App.scene = Game()
             # elif e.key == pygame.K_RETURN and self.selected == 1: App.scene = Settings()
-            elif e.key == pygame.K_RETURN and self.selected == 2: App.running = False
+            elif e.key == pygame.K_RETURN and self.selected == 3: App.running = False
 
 class Node:
 
@@ -140,17 +153,23 @@ class Text(Node):
         
         self.font = pygame.font.SysFont(self.fname, self.fsize)    
         self.img = self.font.render(self.text, True, self.fcolor)
-
         self.size = self.img.get_size()
         self.pos = (self.pos[0] - self.size[0]/2, self.pos[1] - self.size[1]/2)
 
-    def change_font(self, fname, fsize):
+    def change_text(self, text):
 
-        """Change the font and render new surface."""
+        """Change the text of the node"""
 
-        self.fsize = fsize
-        self.fname = fname
-        self.font = pygame.font.SysFont(self.fname, self.fsize)
+        self.text = text
+        self.img = self.font.render(self.text, True, self.fcolor)
+        self.size = self.img.get_size()
+        self.pos = (self.pos[0] - self.size[0]/2, self.pos[1] - self.size[1]/2)
+
+    def change_color(self, color):
+
+        """Change the color of the text"""
+ 
+        self.fcolor = color
         self.img = self.font.render(self.text, True, self.fcolor)
 
 if __name__ == "__main__":

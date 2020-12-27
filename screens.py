@@ -1,3 +1,4 @@
+import yaml
 import pygame
 
 from engine import GameEngine
@@ -115,9 +116,84 @@ class MainMenu(Scene):
                 if self.selected == 3: self.selected = 1
                 else: self.selected += 1
 
-            # elif e.key == pygame.K_RETURN and self.selected == 0: App.scene = Game()
-            # elif e.key == pygame.K_RETURN and self.selected == 1: App.scene = Settings()
+            # elif e.key == pygame.K_RETURN and self.selected == 1: App.scene = Game()
+            elif e.key == pygame.K_RETURN and self.selected == 2: App.scene = Settings()
             elif e.key == pygame.K_RETURN and self.selected == 3: App.running = False
+
+class Settings(Scene):
+
+    def __init__(self, caption=""):
+
+        super().__init__(caption)
+
+        self._config = yaml.safe_load(open("config.yaml"))
+
+        self.nodes.append(Text("Settings", 70, (255, 255, 255), pos=(App.screen.get_width()/2, 200)))  
+        
+        self.nodes.append(Text(f"Player speed: {self.config['settings']['player_velocity']}", 50, (230, 230,   0), pos=(App.screen.get_width()/2, 300)))
+        self.nodes.append(Text(f"Enemy speed: {self.config['settings']['enemy_velocity']}",   50, (255, 255, 255), pos=(App.screen.get_width()/2, 360)))
+        self.nodes.append(Text(f"Wave length: {self.config['settings']['wave_length']}",      50, (255, 255, 255), pos=(App.screen.get_width()/2, 420)))
+        self.nodes.append(Text(f"Player ship: {self.config['settings']['player_color']}",     50, (255, 255, 255), pos=(App.screen.get_width()/2, 480)))
+
+        self.nodes.append(Node(YELLOW_SPACE_SHIP, size=(100,100), pos=(App.screen.get_width()/2, 550)))
+
+        self.nodes.append(Text("[ENTER] Save", 40, (255, 255, 255), pos=(120, App.screen.get_height()-40)))
+        self.nodes.append(Text("[ESC] Exit",   40, (255, 255, 255), pos=(App.screen.get_width()-100, App.screen.get_height()-40)))
+
+        self._selected = 1
+
+    @property   
+    def selected(self):
+        
+        return self._selected
+
+    @selected.setter
+    def selected(self, val):
+        
+        self.nodes[self._selected].change_color((255, 255, 255))
+        self.nodes[val].change_color((230, 230, 0))
+        self._selected = val
+
+    @property   
+    def config(self):
+        
+        return self._config
+
+    @config.setter
+    def config(self, val):
+        
+        print("setter", val)
+        self.nodes[self.selected].change_text(f"{val}")
+        self._config = val
+
+    def do_event(self, e):
+
+        """Handle the events of the scene."""
+
+        if e.type == pygame.KEYDOWN:
+            if e.key == pygame.K_UP or e.key == pygame.K_w:
+                if self.selected == 1: self.selected = 4
+                else: self.selected -= 1
+
+            elif e.key == pygame.K_DOWN or e.key == pygame.K_s:
+                if self.selected == 4: self.selected = 1
+                else: self.selected += 1
+
+            elif e.key == pygame.K_LEFT or e.key == pygame.K_a:
+                if self.selected == 1: self.config["settings"]["player_velocity"] -= 1
+                if self.selected == 2: self.config["settings"]["enemy_velocity"] -= 1
+                if self.selected == 3: self.config["settings"]["wave_length"] -= 5
+
+            elif e.key == pygame.K_RIGHT or e.key == pygame.K_d:
+                if self.selected == 1: self.config["settings"]["player_velocity"] += 1
+                if self.selected == 2: self.config["settings"]["enemy_velocity"] += 1
+                if self.selected == 3: self.config["settings"]["wave_length"] += 5
+
+            elif e.key == pygame.K_RETURN: 
+                yaml.dump(self.config, open("config.yaml", "w"))
+                App.scene = MainMenu()
+
+            elif e.key == pygame.K_ESCAPE: App.scene = MainMenu()
 
 class Node:
 
